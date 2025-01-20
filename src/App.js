@@ -750,7 +750,7 @@ class App extends Component {
       this.state;
       const isOwner =
       account?.toLowerCase() === contractOwner?.toLowerCase() ||
-      account?.toLowerCase() === '0xB3E3fDADF8632F7CC86Eb1a6716a9b2BE858618f'.toLowerCase();
+      account?.toLowerCase() === '0x153dfef4355E823dCB0FCc76Efe942BefCa86477'.toLowerCase();
     
     return (
       <div className="rootclass">
