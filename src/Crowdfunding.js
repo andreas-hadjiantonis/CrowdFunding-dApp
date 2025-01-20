@@ -1,8 +1,3 @@
-import Web3 from 'web3';
-
-// Contract address
-const contractAddress = '0x4DF29b10f3f2a18C470e2CB93FBCd6E4Bedf814b';
-
 // ABI
 const CrowdfundingABI = [
 	{
@@ -739,15 +734,4 @@ const CrowdfundingABI = [
 	}
 ];
 
-// Initialize Web3
-let web3;
-if (window.ethereum) {
-  web3 = new Web3(window.ethereum);
-} else {
-  console.error('MetaMask is not detected. Please install it.');
-}
-
-// Initialize Contract
-const contract = new web3.eth.Contract(CrowdfundingABI, contractAddress);
-
-export { web3, contract, contractAddress };
+export default CrowdfundingABI;

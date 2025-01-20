@@ -1,6 +1,11 @@
 import React, { Component } from 'react';
+import Web3 from 'web3';
 import 'bootstrap/dist/css/bootstrap.css';
-import { web3, contract, contractAddress } from './Crowdfunding'; //ABI and Contract Address
+import CrowdfundingABI from './Crowdfunding';
+
+let web3 = null;
+let contract = null;
+let contractAddress = "0x4DF29b10f3f2a18C470e2CB93FBCd6E4Bedf814b";
 
 class App extends Component {
   // Constructor
@@ -8,6 +13,7 @@ class App extends Component {
     super(props);
     this.state = {
       account: '', // Connected wallet address
+      connected: false, //wallet connected status
       contractOwner: '',
       contractBalance: 0,
       destroyed: false,
@@ -34,6 +40,7 @@ class App extends Component {
   /* Project Basics */
   async componentDidMount() {
     try {
+      await this.initializeWeb3();
       await this.loadBlockchainData();
       await this.loadActiveCampaigns();
       await this.loadFulfilledCampaigns();
@@ -51,7 +58,30 @@ class App extends Component {
       console.log(error);
     }
   }
+
+  // Initialize Web3 and Contract
+  async initializeWeb3() {
+    try {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum); // Initialize Web3 with MetaMask
+        contract = new web3.eth.Contract(CrowdfundingABI,contractAddress);
   
+        // Request accounts from MetaMask
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+  
+        if (accounts.length > 0) {
+          this.setState({
+            account: accounts[0],
+            connected: true, /* track wallet connection status */
+          });
+        }
+      } else {
+        alert('MetaMask is not installed. Please install it to use this DApp.');
+      }
+    } catch (error) {
+      console.error('Error initializing Web3:', error);
+    }
+  }
 
   async loadBlockchainData() {
     try {
@@ -78,7 +108,6 @@ class App extends Component {
     }
   }
   
-
   /* Listen for account changes in MetaMask */
   setupAccountListener() {
      
@@ -160,7 +189,6 @@ class App extends Component {
       this.setState({ isBanned: false });
     }
   }
-  
   
   /*Creating a Campaign*/
   async createCampaign(event) {
