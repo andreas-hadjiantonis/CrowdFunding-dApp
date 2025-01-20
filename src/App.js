@@ -499,7 +499,7 @@ class App extends Component {
               <strong>Collected Fees</strong>
             </label>
             <div className="card p-2" style={{ width: '120px', height: '40px' }}>
-              <p className="mb-0">{collectedFees}</p>
+              <p className="mb-0">{collectedFees} ETH</p>
             </div>
           </div>
         </div>
@@ -603,7 +603,7 @@ class App extends Component {
               <th>Price (ETH)</th>
               <th>Pledges Sold</th>
               <th>Pledges Left</th>
-              <th>Your Shares</th>
+              <th>Your Pledges</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -681,7 +681,7 @@ class App extends Component {
               <th>Price (ETH)</th>
               <th>Pledges Sold</th>
               <th>Pledges Needed</th>
-              <th>Your Shares</th>
+              <th>Your Pledges</th>
             </tr>
           </thead>
           <tbody>
@@ -703,7 +703,7 @@ class App extends Component {
 
   renderCancelledCampaigns() {
     const { cancelledCampaigns } = this.state;
-    const hasRefundableShares = Array.isArray(cancelledCampaigns)
+    const hasRefundablePledges = Array.isArray(cancelledCampaigns)
       ? cancelledCampaigns.some((campaign) => Number(campaign.yourPledges) > 0)
       : false;
 
@@ -714,7 +714,7 @@ class App extends Component {
           <button
             className="btn btn-primary btn-lg"
             onClick={this.handleClaimAll}
-            disabled={!hasRefundableShares}
+            disabled={!hasRefundablePledges}
           >
             Claim All
           </button>
@@ -726,7 +726,7 @@ class App extends Component {
               <th>Title</th>
               <th>Price (ETH)</th>
               <th>Pledges Sold</th>
-              <th>Your Shares</th>
+              <th>Your Pledges</th>
             </tr>
           </thead>
           <tbody>
