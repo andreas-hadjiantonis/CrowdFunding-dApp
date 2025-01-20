@@ -38,32 +38,46 @@ class App extends Component {
       await this.loadActiveCampaigns();
       await this.loadFulfilledCampaigns();
       await this.loadCancelledCampaigns();
-      await this.checkIfBanned();
-
-
+  
       const destroyed = await contract.methods.destroyed().call();
       this.setState({ destroyed });
-
+  
+      // Call checkIfBanned after account is set
+      await this.checkIfBanned();
+  
       this.setupAccountListener();
       this.setupEventListeners();
     } catch (error) {
       console.log(error);
     }
   }
+  
 
   async loadBlockchainData() {
     try {
       const accounts = await web3.eth.getAccounts();
+      if (accounts.length === 0) {
+        console.warn('No accounts found');
+        return; // Exit if no accounts are available
+      }
+  
       this.setState({
         account: accounts[0],
         contractOwner: await contract.methods.getowner().call(),
-        contractBalance: web3.utils.fromWei(await web3.eth.getBalance(contractAddress),'ether'),
-        collectedFees: web3.utils.fromWei(await contract.methods.getTotalFeesAccumulated().call(),'ether'),
+        contractBalance: web3.utils.fromWei(
+          await web3.eth.getBalance(contractAddress),
+          'ether'
+        ),
+        collectedFees: web3.utils.fromWei(
+          await contract.methods.getTotalFeesAccumulated().call(),
+          'ether'
+        ),
       });
     } catch (error) {
       console.error(error);
     }
   }
+  
 
   /* Listen for account changes in MetaMask */
   setupAccountListener() {
@@ -134,10 +148,12 @@ class App extends Component {
   
   async checkIfBanned() {
     try {
-      if (!this.state.account) throw new Error('Account not defined');
-      const isBanned = await contract.methods
-        .bannedEntrepreneurs(this.state.account)
-        .call();
+      if (!this.state.account) {
+        console.log('Account not yet defined');
+        return; // Exit if account is not set
+      }
+  
+      const isBanned = await contract.methods.bannedEntrepreneurs(this.state.account).call();
       this.setState({ isBanned });
     } catch (error) {
       console.log(error);
