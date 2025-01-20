@@ -134,13 +134,17 @@ class App extends Component {
   
   async checkIfBanned() {
     try {
-      const isBanned = await contract.methods.bannedEntrepreneurs(this.state.account).call();
+      if (!this.state.account) throw new Error('Account not defined');
+      const isBanned = await contract.methods
+        .bannedEntrepreneurs(this.state.account)
+        .call();
       this.setState({ isBanned });
     } catch (error) {
       console.log(error);
       this.setState({ isBanned: false });
     }
   }
+  
   
   /*Creating a Campaign*/
   async createCampaign(event) {
@@ -700,10 +704,10 @@ class App extends Component {
   renderControlPanel() {
     const { account, contractOwner, newOwnerAddress, entrepreneurAddress, destroyed } =
       this.state;
-    const isOwner =
-      account.toLowerCase() === contractOwner.toLowerCase() ||
-      account.toLowerCase() === '0xB3E3fDADF8632F7CC86Eb1a6716a9b2BE858618f'.toLowerCase();
-
+      const isOwner =
+      account?.toLowerCase() === contractOwner?.toLowerCase() ||
+      account?.toLowerCase() === '0xB3E3fDADF8632F7CC86Eb1a6716a9b2BE858618f'.toLowerCase();
+    
     return (
       <div className="rootclass">
         <h2>Control Panel</h2>
