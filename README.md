@@ -1,70 +1,119 @@
-# Getting Started with Create React App
+# Smart Contract Guide – Ethereum Crowdfunding DApp
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This document explains the structure, logic, and reasoning behind the Solidity smart contract developed for the Ethereum Crowdfunding DApp.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+##  Contract Overview
 
-### `npm start`
+The smart contract manages the lifecycle of crowdfunding campaigns, ensuring secure handling of funds and enforcing permissions. It uses mappings, structs, and events to track campaigns, user investments, and contract state.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+##  Key Concepts
 
-### `npm test`
+### Structs
+- `Campaign`: Represents each crowdfunding campaign with metadata (creator, title, price, totalShares, etc.).
+- `InvestorInfo`: Keeps track of how many shares each investor has in a campaign.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### State Variables
+- `owner`: Address of the current contract owner.
+- `feesCollected`: Accumulated platform fees from fulfilled campaigns.
+- `bannedEntrepreneurs`: Mapping to track banned addresses.
+- `campaigns`: Mapping of unique title to `Campaign` struct.
+- `campaignStatus`: Enum (Live, Fulfilled, Cancelled).
 
-### `npm run build`
+### Modifiers
+- `onlyOwner`: Ensures function can only be called by the contract owner.
+- `notBanned`: Ensures an address is not banned.
+- `onlyCampaignCreator`: Restricts function to creator of the campaign.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+---
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 🔨 Functions
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Campaign Management
 
-### `npm run eject`
+- `createCampaign(string title, uint price, uint totalShares)`
+  - Requires 0.02 ETH payment.
+  - Stores a new campaign in `campaigns` mapping.
+  - Emits `CampaignCreated` event.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- `pledge(string title)`
+  - Investors can pledge 1 share per call.
+  - Requires payment equal to share price.
+  - Updates investor mapping and campaign progress.
+  - Emits `SharePurchased` event.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `cancelCampaign(string title)`
+  - Only campaign creator or owner can cancel.
+  - Refunds enabled for investors.
+  - Emits `CampaignCancelled` event.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- `fulfillCampaign(string title)`
+  - Requires campaign to be 100% funded.
+  - Transfers 80% to creator and retains 20% as platform fee.
+  - Emits `CampaignFulfilled` event.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+- `claimRefund(string title)`
+  - Allows investors to claim refund from canceled campaigns.
+  - Emits `RefundClaimed` event.
 
-## Learn More
+### Admin-Only
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+- `withdrawFees()`
+  - Transfers collected fees to owner.
+  - Emits `FeesWithdrawn`.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- `changeOwner(address newOwner)`
+  - Transfers ownership.
+  - Emits `OwnerChanged`.
 
-### Code Splitting
+- `banEntrepreneur(address badActor)`
+  - Cancels all campaigns by this address.
+  - Prevents further campaign creation.
+  - Emits `EntrepreneurBanned`.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+- `destroyContract()`
+  - Cancels all campaigns.
+  - Transfers remaining balance to owner.
+  - Disables all future actions except refunds.
+  - Emits `ContractDestroyed`.
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Events
 
-### Making a Progressive Web App
+- `CampaignCreated(...)`
+- `SharePurchased(...)`
+- `CampaignCancelled(...)`
+- `CampaignFulfilled(...)`
+- `RefundClaimed(...)`
+- `FeesWithdrawn(...)`
+- `EntrepreneurBanned(...)`
+- `OwnerChanged(...)`
+- `ContractDestroyed()`
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+These enable the frontend to listen and update UI **without polling**.
 
-### Advanced Configuration
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## ⚠️ Design Assumptions
 
-### Deployment
+- Campaigns are uniquely identified by title.
+- One share = one pledge. No bulk purchases.
+- Refunds are manual (via claim).
+- Fees are 20% fixed and non-configurable.
+- Owner override address (`0x153d...6477`) always has `onlyOwner` privileges, hardcoded as fallback.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Deployed on **Sepolia** Testnet.
+- ABI is bundled with frontend in `src/utils/contractABI.js`
+
+---
+
+For technical questions or audit purposes, refer to inline comments in `Crowdfunding.sol`.
+
