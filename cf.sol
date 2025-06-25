@@ -5,7 +5,6 @@ pragma solidity ^0.8.26;
 contract Crowdfunding {
 
     address public owner;
-    address public constant specialOwner = 0x153dfef4355E823dCB0FCc76Efe942BefCa86477;
     uint public campaignFee = 0.02 ether;
     uint public reservationFeePercentage = 20; //20%
     uint public campaignCount;
@@ -45,7 +44,7 @@ contract Crowdfunding {
     //Modifiers
     //Owner Related
      modifier onlyOwner() {
-        require(msg.sender == owner || msg.sender == specialOwner, "Not authorized");
+        require(msg.sender == owner, "Not authorized");
         _;
     }
     modifier notOwner() {
