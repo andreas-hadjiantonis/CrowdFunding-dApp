@@ -1,1 +1,4 @@
+# Force Solidity language detection
 *.sol linguist-language=Solidity
+*.sol linguist-detectable
+
